@@ -1,0 +1,320 @@
+/* 기본적인 리셋 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  background-color: #f4f4f4;
+  color: #333;
+}
+body::-webkit-scrollbar {
+  width: 10px;
+}
+body::-webkit-scrollbar-thumb {
+  background-color: rgb(55, 55, 55);
+  border-radius: 10px;
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+body::-webkit-scrollbar-track {
+  border-radius: 10px;
+  box-shadow: inset 0px 0px 5px white;
+}
+
+a {
+  text-decoration: none;
+  color: #333;
+}
+
+/* Wrap */
+.wrap {
+  width: 100%;
+  margin: 0 auto;
+  max-width: 1200px;
+  padding: 20px;
+}
+
+/* Header 스타일링 */
+header {
+  color: white;
+  padding: 20px 0;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 50px;
+}
+
+.h_inner_top {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  padding-top: 50px;
+}
+
+.h_inner_top h1 {
+  font-size: 24px;
+}
+
+.gnb {
+  list-style: none;
+  display: flex;
+  gap: 15px;
+  width: 100%;
+  justify-content: center;
+  background-color: #5293ff;
+  padding: 30px;
+  border-radius: 15px 15px 0 0;
+}
+
+.gnb .tab {
+  cursor: pointer;
+  position: relative;
+}
+
+.gnb .tab a {
+  font-size: 17px;
+  line-height: 39px;
+  letter-spacing: -0.01em;
+  color: #fcfdfd;
+  display: inline-block;
+  padding: 0px 15px;
+  border-radius: 43px;
+  font-weight: bold;
+  position: relative;
+  transition: background-color 0.3s ease;
+  text-align: center;
+}
+
+.gnb .tab.active a,
+.gnb .tab a:hover {
+  background: #2f7af5;
+}
+
+/* 말풍선 효과 */
+.gnb .tab.active a::after {
+  content: '';
+  display: block;
+  position: absolute;
+  border-top: 10px solid #5293ff;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 0 solid transparent;
+  bottom: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+}
+
+/* active 상태일 때 말풍선이 보이도록 */
+.gnb .tab.active a::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* 검색바 */
+.h_inner-bottom {
+  text-align: center;
+}
+
+#searchInput {
+  width: 400px;
+  border: 2px solid #5695ff;
+  line-height: 45px;
+  border-radius: 53px;
+  font-weight: 400;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  color: #4f8ef7;
+  padding-left: 25px;
+  margin-right: 10px;
+}
+
+#searchInput::placeholder {
+  color: #4f8ef7;
+}
+
+#searchBtn {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #4f8ef7;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#searchBtn:hover {
+  background-color: #2a76f5;
+}
+
+/* Main 영역 */
+main {
+  margin-top: 30px;
+  padding: 0 20px;
+}
+
+/* 콘텐츠 영역 */
+.search-container {
+  display: flex;
+  flex-direction: column;
+}
+
+#content {
+  width: 1100px;
+  margin: 0px auto;
+  padding: 0px 25px;
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 1px solid #eeeeee;
+  box-shadow: 0px 6px 8px rgba(181, 181, 181, 0.1);
+  border-top: none;
+}
+
+.cont {
+  background-color: white;
+  padding: 30px;
+  border-radius: 10px;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.cont h2 {
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.cont .list {
+  list-style: none;
+  padding: 0;
+  font-size: 16px;
+  color: #555;
+}
+
+/* ul, li 기본 스타일링 */
+.search-container ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.search-container ul li {
+  position: relative;
+  padding: 12px 20px 12px 30px;
+  border-radius: 10px;
+  background-color: #f9f9f9;
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: #555;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.search-container ul li::before {
+  content: '\2022';
+  position: absolute;
+  top: 9px;
+  left: 0;
+  color: #4f8ef7;
+  font-size: 20px;
+  margin: 0px 15px;
+  align-self: flex-start;
+}
+
+.search-container ul li p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.search-container ul li p:first-child {
+  margin-top: 0;
+}
+
+.search-container ul li:hover {
+  background-color: #e0efff; /* 밝은 파란색 배경 */
+  transform: scale(1.02);
+}
+
+.cont .list li strong {
+  color: #4f8ef7;
+}
+
+.highlight {
+  line-height: 100%;
+  padding: 0 5px;
+  border-radius: 4px;
+  background-color: #4f8ef7;
+  color: #fff;
+  font-weight: bold;
+  font-family: Pretendard, 'Malgun Gothic', sans-serif;
+}
+
+.tab-content {
+  display: block;
+  padding: 30px;
+  border-radius: 10px;
+  margin-top: 20px;
+}
+
+/* 탭 내용 구분을 위한 간격 */
+.tab-content + .tab-content {
+  margin-top: 20px;
+}
+
+.tab-content h2 {
+  padding-top: 9px;
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 21px;
+  letter-spacing: -0.06em;
+}
+
+.tab-content .list {
+  font-size: 16px;
+  color: #555;
+  line-height: 1.6;
+  padding-left: 20px;
+}
+
+.tab-content .list li {
+  /* margin-bottom: 20px; */
+}
+
+.tab-content .list li p {
+  margin-top: 5px;
+}
+
+/* Footer */
+footer {
+  height: 100px;
+}
+
+/* 반응형 스타일링 */
+@media (max-width: 768px) {
+  .h_inner_top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .gnb {
+    flex-direction: column;
+    margin-top: 15px;
+  }
+
+  #searchInput {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  #searchBtn {
+    width: 100%;
+  }
+}
