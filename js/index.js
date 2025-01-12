@@ -3,13 +3,94 @@ document.addEventListener('DOMContentLoaded', () => {
   const searchBtn = document.getElementById('searchBtn');
   const tabs = document.querySelectorAll('.tab');
   const contents = document.querySelectorAll('.tab-content');
-  let currentSearchIndex = -1; // 현재 검색 결과의 인덱스
-  let currentResults = []; // 검색 결과 저장
-  let currentQuery = ''; // 현재 검색어 저장
-  let searchInProgress = false; // 검색 진행 상태를 추적
+  let currentSearchIndex = -1;
+  let currentResults = [];
+  let currentQuery = '';
+  let searchInProgress = false;
+
+  // 스크롤 이벤트 핸들러
+  const searchBar = document.querySelector('.h_inner-bottom');
+  const placeholder = document.createElement('div'); // 레이아웃 유지를 위한 placeholder
+
+  // 초기 offsetTop 값 저장
+  let stickyOffset = searchBar.getBoundingClientRect().top + window.scrollY;
+
+  // placeholder 초기 높이 설정
+  placeholder.style.height = `${searchBar.offsetHeight}px`;
+
+  // 레이아웃 변화를 감지하고 stickyOffset을 다시 계산
+  window.addEventListener('resize', () => {
+    stickyOffset = searchBar.getBoundingClientRect().top + window.scrollY;
+    placeholder.style.height = `${searchBar.offsetHeight}px`; // 높이 재설정
+  });
+
+  window.addEventListener('scroll', () => {
+    const scrollY = window.scrollY;
+
+    if (scrollY >= stickyOffset) {
+      // 고정 상태로 전환
+      if (!searchBar.classList.contains('fixed')) {
+        searchBar.classList.add('fixed');
+        searchBar.parentNode.insertBefore(placeholder, searchBar); // placeholder 추가
+      }
+    } else {
+      // 고정 상태 해제
+      if (searchBar.classList.contains('fixed')) {
+        searchBar.classList.remove('fixed');
+        if (placeholder.parentNode) {
+          placeholder.parentNode.removeChild(placeholder); // placeholder 제거
+        }
+      }
+    }
+  });
+
+  // 모달 생성 함수
+  function createModal(message) {
+    const existingModal = document.querySelector('.custom-modal');
+    if (existingModal) existingModal.remove();
+
+    const modal = document.createElement('div');
+    modal.classList.add('custom-modal');
+
+    const modalContent = document.createElement('div');
+    modalContent.classList.add('custom-modal-content');
+    modalContent.innerHTML = `
+      <p>${message}</p>
+      <button id="closeModalBtn">닫기</button>
+    `;
+
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+
+    document.body.classList.add('modal-active');
+
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    closeModalBtn.addEventListener('click', closeModal);
+
+    document.addEventListener('keydown', handleKeyPress);
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) {
+        closeModal();
+      }
+    });
+
+    function closeModal() {
+      modal.remove();
+      document.body.classList.remove('modal-active');
+      document.removeEventListener('keydown', handleKeyPress);
+    }
+
+    function handleKeyPress(event) {
+      if (event.key === 'Escape') {
+        closeModal();
+      }
+    }
+  }
 
   // 탭 활성화 함수
   function activateTab(tabId) {
+    if (document.body.classList.contains('modal-active')) return;
+
     tabs.forEach((tab) => {
       const isActive = tab.getAttribute('data-tab') === tabId;
       tab.classList.toggle('active', isActive);
@@ -19,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 초기 탭 활성화 (첫 번째 탭)
+  // 초기 탭 활성화
   activateTab('tab1');
 
   // 탭 클릭 이벤트
@@ -30,20 +111,32 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 검색 이벤트 처리
+  // 검색 핸들러
   function handleSearch() {
-    const query = searchInput.value.trim();
-    if (!query) return;
+    if (document.body.classList.contains('modal-active')) return;
 
-    // 새로운 검색어일 경우 상태 초기화
-    if (query !== currentQuery) {
-      resetSearch();
-      collectResults(query);
-      currentQuery = query;
-      searchInProgress = true; // 검색 시작
+    const query = searchInput.value.trim();
+    if (!query) {
+      createModal('검색어를 입력해주세요!');
+      return;
     }
 
-    // 검색이 진행 중이면 다음 결과로 이동
+    const normalizedQuery = normalizeText(query);
+
+    if (normalizedQuery !== currentQuery || !searchInProgress) {
+      resetSearch();
+      collectResults(normalizedQuery);
+      currentQuery = normalizedQuery;
+      searchInProgress = true;
+      currentSearchIndex = -1;
+
+      if (currentResults.length === 0) {
+        createModal('검색 결과가 없습니다!');
+        searchInProgress = false;
+        return;
+      }
+    }
+
     if (searchInProgress) {
       moveToNextResult();
     }
@@ -52,26 +145,26 @@ document.addEventListener('DOMContentLoaded', () => {
   // 검색 버튼 클릭 이벤트
   searchBtn.addEventListener('click', handleSearch);
 
-  // 엔터키로 검색 이벤트 추가
+  // Enter 키 입력 이벤트
   searchInput.addEventListener('keypress', (event) => {
     if (event.key === 'Enter') {
       handleSearch();
     }
   });
 
-  // 검색 상태 초기화
+  // 검색 초기화 함수
   function resetSearch() {
-    // 기존 하이라이트 복원
     currentResults.forEach(({ element }) => {
       const originalHTML = element.getAttribute('data-original-html');
-      element.innerHTML = originalHTML ? originalHTML : element.innerHTML; // 기존 HTML 복원
+      element.innerHTML = originalHTML ? originalHTML : element.innerHTML;
+      element.classList.remove('active');
     });
     currentResults = [];
     currentSearchIndex = -1;
-    searchInProgress = false; // 검색 진행 종료
+    searchInProgress = false;
   }
 
-  // 검색 결과 수집
+  // 검색 결과 수집 함수
   function collectResults(query) {
     tabs.forEach((tab) => {
       const tabId = tab.getAttribute('data-tab');
@@ -79,13 +172,11 @@ document.addEventListener('DOMContentLoaded', () => {
         `#${tabId} .search-container`
       );
 
-      // 'li' 태그로 수정
       const elements = Array.from(searchContainer.querySelectorAll('li'));
 
       elements.forEach((el) => {
-        const regex = new RegExp(query, 'gi');
-        if (regex.test(el.textContent)) {
-          // 원본 HTML을 저장해두고 나중에 복원할 수 있도록
+        const normalizedTextContent = normalizeText(el.textContent);
+        if (normalizedTextContent.includes(query)) {
           if (!el.getAttribute('data-original-html')) {
             el.setAttribute('data-original-html', el.innerHTML);
           }
@@ -95,36 +186,51 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 다음 검색 결과로 이동
+  // 검색 결과 강조 및 이동
   function moveToNextResult() {
-    // 이전 하이라이트된 텍스트 복원
     if (currentSearchIndex >= 0 && currentSearchIndex < currentResults.length) {
       const { element } = currentResults[currentSearchIndex];
       const originalHTML = element.getAttribute('data-original-html');
-      element.innerHTML = originalHTML ? originalHTML : element.innerHTML; // 기존 HTML 복원
+      element.innerHTML = originalHTML ? originalHTML : element.innerHTML;
+      element.classList.remove('active');
     }
 
-    // 현재 인덱스를 하나 증가시켜 다음 결과로 이동
     currentSearchIndex++;
 
-    // 더 이상 결과가 없으면 마지막 결과로 고정
     if (currentSearchIndex >= currentResults.length) {
-      alert('마지막 결과입니다!');
-      currentSearchIndex = currentResults.length - 1; // 마지막 인덱스로 고정
-      return;
+      currentSearchIndex = currentResults.length - 1;
     }
 
     const { tabId, element } = currentResults[currentSearchIndex];
-
-    // 탭 전환 및 결과 스크롤
     activateTab(tabId);
-    setTimeout(() => {
-      const regex = new RegExp(currentQuery, 'gi');
-      element.innerHTML = element.innerHTML.replace(
-        regex,
-        (match) => `<span class="highlight">${match}</span>`
-      ); // 현재 텍스트에 하이라이트 적용
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 200);
+    highlightElement(element);
+
+    const hasMoreResults = currentSearchIndex < currentResults.length - 1;
+    if (!hasMoreResults) {
+      setTimeout(() => {
+        createModal('마지막 검색결과입니다!');
+      }, 100);
+      searchInProgress = false;
+    }
+  }
+
+  // 검색 결과 강조 표시
+  function highlightElement(element) {
+    const originalHTML =
+      element.getAttribute('data-original-html') || element.innerHTML;
+
+    const regex = new RegExp(currentQuery.split('').join('\\s*'), 'gi');
+
+    element.innerHTML = originalHTML.replace(
+      regex,
+      (match) => `<span class="highlight">${match}</span>`
+    );
+    element.classList.add('active');
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  // 텍스트 정규화
+  function normalizeText(text) {
+    return text.replace(/\s+/g, '').toLowerCase();
   }
 });
