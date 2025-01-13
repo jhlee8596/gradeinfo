@@ -24,6 +24,9 @@ body::-webkit-scrollbar-track {
   border-radius: 10px;
   box-shadow: inset 0px 0px 5px white;
 }
+body.modal-active {
+  overflow: hidden; /* 스크롤 차단 */
+}
 
 a {
   text-decoration: none;
@@ -472,9 +475,11 @@ footer {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    overflow-x: auto; /* 가로 스크롤 활성화 */
+    overflow-x: scroll; /* 가로 스크롤 활성화 */
+    overflow-y: hidden;
     white-space: nowrap; /* 줄 바꿈 방지 */
     -webkit-overflow-scrolling: touch; /* 부드러운 스크롤 (iOS) */
+    border-radius: 0;
   }
   .gnb::-webkit-scrollbar {
     display: none; /* 스크롤바 숨기기 */
