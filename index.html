@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>학점은행제 정리</title>
     <link rel="stylesheet" href="./css/index.css" type="text/css">
+    <link rel="stylesheet" href="./css/date-modal.css" type="text/css">
 </head>
 
 <body>
@@ -361,10 +362,50 @@
             </div>
         </main>
     </div>
+
+    <button id="openModalBtn" class="btn">학기 종료 날짜 및 학점 계산</button>
+
+    <div class="overlay" id="overlay"></div>
+
+    <div class="modal" id="modal">
+        <div class="modal-header">학기 종료 날짜 및 학점 계산</div>
+        <div class="modal-body">
+            <div class="input-group">
+                <label for="startDate">개강일 (YYYY-MM-DD):</label>
+                <input type="date" id="startDate" required>
+            </div>
+            <div class="input-group">
+                <label for="semesterCount">학기 선택:</label>
+                <select id="semesterCount">
+                    <option value="1">1학기</option>
+                    <option value="2">2학기</option>
+                    <option value="3">3학기</option>
+                    <option value="4">4학기</option>
+                    <option value="5">5학기</option>
+                    <option value="6">6학기</option>
+                    <option value="7">7학기</option>
+                    <option value="8">8학기</option>
+                </select>
+            </div>
+            <div class="output-group">
+                <label>종료 날짜:</label>
+                <span id="endDate"></span>
+            </div>
+            <div class="output-group">
+                <label>획득 가능한 학점:</label>
+                <span id="totalCredits"></span>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button id="calculateBtn" class="dateModalBtn">계산</button>
+            <button id="closeDateModalBtn" class="dateModalBtn">닫기</button>
+        </div>
+    </div>
     <footer>
         <address>© Jaehyeon Lee 2023. All Rights Reserved.</address>
     </footer>
 </body>
 <script src="./js/index.js"></script>
+<script src="./js/date-modal.js"></script>
 
 </html>
