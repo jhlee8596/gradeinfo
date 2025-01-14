@@ -41,7 +41,6 @@ document.addEventListener('keydown', (event) => {
 
 overlay.addEventListener('click', (event) => {
   if (event.target === overlay) {
-    // 오버레이 영역 클릭인지 확인
     overlay.style.display = 'none';
     modal.style.display = 'none';
     toggleBodyModalActive(false);
@@ -58,30 +57,64 @@ calculateBtn.addEventListener('click', () => {
     return;
   }
 
-  // Calculate end date (15 weeks per semester)
-  const weeksPerSemester = 15;
-  const totalWeeks = semesterCount * weeksPerSemester;
-  const endDate = new Date(startDate);
-  endDate.setDate(endDate.getDate() + totalWeeks * 7);
-  const endDateString = endDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+  const semesterInfo = [];
+  const creditsPerSemester = 24; // Maximum credits per semester (8 courses * 3 credits)
+  const maxCoursesPerYear = 14; // Maximum courses per year (14 courses * 3 credits = 42 credits)
 
-  // Calculate total credits (3 credits per subject, max 8 subjects per semester, max 14 subjects per year)
-  const maxSubjectsPerSemester = 8;
-  const maxSubjectsPerYear = 14;
   let totalCredits = 0;
+  let totalCourses = 0;
+  let yearlyCourses = 0; // Tracks courses for the current academic year
+  let currentStartDate = new Date(startDate);
 
   for (let i = 0; i < semesterCount; i++) {
-    if ((i + 1) % 2 === 0) {
-      totalCredits +=
-        Math.min(
-          maxSubjectsPerYear - maxSubjectsPerSemester,
-          maxSubjectsPerSemester
-        ) * 3;
+    let startOfSemester = new Date(currentStartDate);
+    let endOfSemester;
+    let term;
+
+    // Calculate end date based on 15 weeks (105 days)
+    endOfSemester = new Date(startOfSemester);
+    endOfSemester.setDate(endOfSemester.getDate() + 105);
+
+    // Determine the term based on the end date
+    if (endOfSemester.getMonth() + 1 <= 8) {
+      term = "1학기";
     } else {
-      totalCredits += maxSubjectsPerSemester * 3;
+      term = "2학기";
+    }
+
+    // Add semester info
+    semesterInfo.push({
+      startDate: startOfSemester.toISOString().split("T")[0],
+      endDate: endOfSemester.toISOString().split("T")[0],
+      academicYear: term === "1학기"
+        ? `${startOfSemester.getFullYear()}-${startOfSemester.getFullYear()}`
+        : `${startOfSemester.getFullYear()}-${startOfSemester.getFullYear() + 1}`,
+      term: term,
+      credits: creditsPerSemester,
+    });
+
+    // Calculate courses and credits per semester
+    const remainingCoursesForYear = maxCoursesPerYear - yearlyCourses;
+    const coursesThisSemester = Math.min(8, remainingCoursesForYear); // Max 8 courses per semester
+    const creditsThisSemester = coursesThisSemester * 3; // 3 credits per course
+
+    totalCredits += creditsThisSemester;
+    totalCourses += coursesThisSemester;
+    yearlyCourses += coursesThisSemester;
+
+    // Update currentStartDate for the next semester
+    if (term === "1학기") {
+      currentStartDate = new Date(`${startOfSemester.getFullYear()}-09-01`);
+    } else {
+      currentStartDate = new Date(`${startOfSemester.getFullYear() + 1}-03-01`);
     }
   }
 
-  endDateSpan.textContent = endDateString;
+  // Display the last semester's end date and total credits
+  const lastSemester = semesterInfo[semesterInfo.length - 1];
+  endDateSpan.textContent = lastSemester.endDate;
   totalCreditsSpan.textContent = totalCredits;
+
+  // Optionally, display detailed semester information in console
+  console.log("Semester Details:", semesterInfo);
 });
